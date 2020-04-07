@@ -12,11 +12,14 @@ library(reshape2)
 
 # 1. Read spreadsheet;
 can_case <- read.table("C:/Users/kuan liu/Dropbox (UT_KLiu)/covid19/data/Covid19Canada-master/cases.csv", 
-                      header = TRUE, sep = ",")
+                       header = TRUE, sep = ",", encoding = 'UTF-8')
 
 # 2. Create daily aggregate cases by reporting PHU city after march 5th;
-can_case$date_report<-as.Date(can_case$date_report, format="%d-%m-%Y")
+can_case$date_report<-strftime(strptime(can_case$date_report,"%d-%m-%Y"),"%m-%d")
+
 on_case <- filter(can_case, province == "Ontario")  %>% group_by(date_report,health_region) %>% summarise(Freq=n())
+qc_case <- filter(can_case, province == "Quebec")  %>% group_by(date_report,health_region) %>% summarise(Freq=n())
+bc_case <- filter(can_case, province == "BC")  %>% group_by(date_report,health_region) %>% summarise(Freq=n())
 
 # If you desire to plot after a specific date, for example before I only extract case data reported after March 5th, 2020, 
 #you can uncomment and run the code line below;
@@ -34,33 +37,115 @@ on_case <- on_case %>%
     Freq >=1 & Freq <=9    ~ "1",
     Freq >=10 & Freq <=49  ~ "2",
     Freq >=50 & Freq <=99  ~ "3",
-    Freq >=100 ~ "4"))
+    Freq >=100 & Freq <=499 ~ "4",
+    Freq >=500 ~ "5"))
+
+qc_case <- qc_case %>%
+  mutate( cases = case_when(
+    Freq >=1 & Freq <=9    ~ "1",
+    Freq >=10 & Freq <=49  ~ "2",
+    Freq >=50 & Freq <=99  ~ "3",
+    Freq >=100 & Freq <=499 ~ "4",
+    Freq >=500 ~ "5"))
+
+bc_case <- bc_case %>%
+  mutate( cases = case_when(
+    Freq >=1 & Freq <=9    ~ "1",
+    Freq >=10 & Freq <=49  ~ "2",
+    Freq >=50 & Freq <=99  ~ "3",
+    Freq >=100 & Freq <=499 ~ "4",
+    Freq >=500 ~ "5"))
 
 # 5.1 reorder health region by case frequency count, note that toronto should have the highest cumulative frequncy;
-on_case_region<- filter(can_case, province == "Ontario" & date_report > "2020-03-05")  %>% group_by(health_region) %>% summarise(Freq=n())
-region_order <- unlist(on_case_region[rev(order(on_case_region$Freq)),][,1]) #save new region order by total case frequency to a vector;
+on_case_region<- filter(can_case, province == "Ontario" )  %>% group_by(health_region) %>% summarise(Freq=n())
+region_order <- unlist(on_case_region[order(on_case_region$Freq),][,1]) #save new region order by total case frequency to a vector;
 
 # 5.2 update original level to the new ordered regional level;
 on_case$health_region<- factor(on_case$health_region, levels=region_order[1:dim(on_case_region)[1]])
 
+# 5.3 update for QC and BC
+qc_case_region<- filter(can_case, province == "Quebec" )  %>% group_by(health_region) %>% summarise(Freq=n())
+region_order <- unlist(qc_case_region[order(qc_case_region$Freq),][,1]) #save new region order by total case frequency to a vector;
+qc_case$health_region<- factor(qc_case$health_region, levels=region_order[1:dim(qc_case_region)[1]])
+
+bc_case_region<- filter(can_case, province == "BC" )  %>% group_by(health_region) %>% summarise(Freq=n())
+region_order <- unlist(bc_case_region[order(bc_case_region$Freq),][,1]) #save new region order by total case frequency to a vector;
+bc_case$health_region<- factor(bc_case$health_region, levels=region_order[1:dim(bc_case_region)[1]])
 
 # 6.plot;
 
-png("covid19_oncase_heatmap.png", width = 8, height = 10, units = "in", res = 400)
+png("covid19_oncase_heatmap.png", width = 8, height = 5, units = "in", res = 300)
 
-ggplot(on_case, aes( health_region, as.factor(reorder(date_report, desc(date_report))))) +
+ggplot(on_case, aes( x=as.factor(reorder(date_report, desc(date_report))),y=health_region)) +
   coord_equal()+
   scale_x_discrete(position = "top")+
   geom_tile(aes(fill = cases )) + 
-  geom_text(aes(label = round(Freq, 1)), size=3) +
-  scale_fill_brewer(palette = "YlOrRd",label=c("1-9","10-49","50-99",expression(phantom(x) >=100))) +
-  labs(y = " ", x = "",fill="Daily cases",caption = "Heat Map of Ontario Daily Confirmed COVID-19 Cases by Region")+
+  geom_text(aes(label = round(Freq, 1)), size=2) +
+  scale_fill_brewer(palette = "YlOrRd",label=c("1-9","10-49","50-99","100-499",expression(phantom(x) >=500))) +
+  labs(y = " ", x = "",fill="Daily cases",caption = "Daily new COVID-19 Cases by Region in Ontario")+
   theme(panel.background = element_rect(fill = "white", colour = "black"),
-      panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank(), 
-      legend.position = "right",
-      axis.text.x = element_text(angle = 90, hjust = 0),
-      plot.margin = margin(0,0, 0, 0, "cm"), 
-      plot.caption = element_text(hjust=1, size=rel(1.2)))
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), 
+        legend.position = "right",
+        legend.key.width=unit(0.25, "cm"),
+        legend.key.height =unit(0.25, "cm"),
+        legend.text = element_text(size=6),
+        legend.title = element_text(size=6),
+        axis.title = element_text(size=6),
+        axis.text = element_text(size=6),
+        axis.text.x = element_text(angle = 90, hjust = 0),
+        plot.margin = margin(0,0, 0, 0, "cm"), 
+        plot.caption = element_text(hjust=1, size=7)) 
 
 dev.off()
+
+png("covid19_bccase_heatmap.png", width = 6.5, height = 3.5, units = "in", res = 300)
+
+ggplot(bc_case, aes( x=as.factor(reorder(date_report, desc(date_report))),y=health_region)) +
+  coord_equal()+
+  scale_x_discrete(position = "top")+
+  geom_tile(aes(fill = cases )) + 
+  geom_text(aes(label = round(Freq, 1)), size=2) +
+  scale_fill_brewer(palette = "YlOrRd",label=c("1-9","10-49","50-99","100-499",expression(phantom(x) >=500))) +
+  labs(y = " ", x = "",fill="Daily cases",caption = "Daily new COVID-19 Cases by Region in British Columbia")+
+  theme(panel.background = element_rect(fill = "white", colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), 
+        legend.position = "right",
+        legend.key.width=unit(0.25, "cm"),
+        legend.key.height =unit(0.25, "cm"),
+        legend.text = element_text(size=6),
+        legend.title = element_text(size=6),
+        axis.title = element_text(size=6),
+        axis.text = element_text(size=6),
+        axis.text.x = element_text(angle = 90, hjust = 0),
+        plot.margin = margin(0,0, 0, 0, "cm"), 
+        plot.caption = element_text(hjust=1, size=7)) 
+
+dev.off()
+
+png("covid19_qccase_heatmap.png", width = 6.5, height = 3.5, units = "in", res = 300)
+
+ggplot(qc_case, aes( x=as.factor(reorder(date_report, desc(date_report))),y=health_region)) +
+  coord_equal()+
+  scale_x_discrete(position = "top")+
+  geom_tile(aes(fill = cases )) + 
+  geom_text(aes(label = round(Freq, 1)), size=2) +
+  scale_fill_brewer(palette = "YlOrRd",label=c("1-9","10-49","50-99","100-499",expression(phantom(x) >=500))) +
+  labs(y = " ", x = "",fill="Daily cases",caption = "Daily new COVID-19 Cases by Region in Quebec")+
+  theme(panel.background = element_rect(fill = "white", colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), 
+        legend.position = "right",
+        legend.key.width=unit(0.25, "cm"),
+        legend.key.height =unit(0.25, "cm"),
+        legend.text = element_text(size=6),
+        legend.title = element_text(size=6),
+        axis.title = element_text(size=6),
+        axis.text = element_text(size=6),
+        axis.text.x = element_text(angle = 90, hjust = 0),
+        plot.margin = margin(0,0, 0, 0, "cm"), 
+        plot.caption = element_text(hjust=1, size=7)) 
+
+dev.off()
+
