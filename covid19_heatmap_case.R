@@ -16,7 +16,11 @@ can_case <- read.table("C:/Users/kuan liu/Dropbox (UT_KLiu)/covid19/data/Covid19
 
 # 2. Create daily aggregate cases by reporting PHU city after march 5th;
 can_case$date_report<-as.Date(can_case$date_report, format="%d-%m-%Y")
-on_case <- filter(can_case, province == "Ontario" & date_report > "2020-03-05")  %>% group_by(date_report,health_region) %>% summarise(Freq=n())
+on_case <- filter(can_case, province == "Ontario")  %>% group_by(date_report,health_region) %>% summarise(Freq=n())
+
+# If you desire to plot after a specific date, for example before I only extract case data reported after March 5th, 2020, 
+#you can uncomment and run the code line below;
+# on_case <- filter(can_case, province == "Ontario" & date_report > "2020-03-05")  %>% group_by(date_report,health_region) %>% summarise(Freq=n())
 
 # 3. checking the daily case count distribution;
 summary(on_case$Freq)
@@ -42,7 +46,7 @@ on_case$health_region<- factor(on_case$health_region, levels=region_order[1:dim(
 
 # 6.plot;
 
-png("covid19_oncase_heatmap.png", width = 7.5, height = 8, units = "in", res = 400)
+png("covid19_oncase_heatmap.png", width = 8, height = 10, units = "in", res = 400)
 
 ggplot(on_case, aes( health_region, as.factor(reorder(date_report, desc(date_report))))) +
   coord_equal()+
