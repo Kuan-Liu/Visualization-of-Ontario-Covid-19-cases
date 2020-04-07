@@ -1,5 +1,7 @@
-# Visualization 1-Demographic Pyramid Plot of Ontario confirmed COVID-19 cases
-# Visualization 2-Heatmap of Ontario daily confirmed cases
+# Visualization plots of Ontario Confirmed COVID-19 Cases
+
+- Visualization 1. Demographic Pyramid Plot of Ontario confirmed COVID-19 cases
+- Visualization 2. Heatmap of Ontario daily confirmed cases
 
 Contributor: Kuan Liu, kuan.liu@mail.utoronto.ca
 
