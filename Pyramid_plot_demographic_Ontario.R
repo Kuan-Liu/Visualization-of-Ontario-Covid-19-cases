@@ -80,7 +80,7 @@ resolvep<-ggplot(dfresolve, aes(x = forcats::fct_rev(Agegp), y = Data, fill = Ge
   geom_bar(stat = "identity", position = position_dodge(width=-0.5), width = 0.8, colour="black") +
   geom_text(size = 3, stat = 'identity',
             aes(label=c(abs(Data)),
-                hjust=c(rep(c(-0.4,1.4),9)))) +
+                hjust=c(rep(c(-0.4,1.4),8),-0.4,1))) +
   facet_share(~Gender, dir = "h", scales = "free", reverse_num = TRUE) +
   coord_flip() + 
   labs(y = paste("Frequency count (n)", " \n Total number of resolved cases ",sum(abs(dfresolve$Data))), x = "", title = "Demographic of Ontario COVID-19 resolved cases") +
@@ -108,7 +108,7 @@ dp<-ggplot(dfdeath, aes(x = forcats::fct_rev(Agegp), y = Data, fill = Gender)) +
         axis.title = element_text(size=11),
         plot.margin = margin(1,1, 0, 0, "cm"))
 
-combo <- cowplot::plot_grid(resolvep, dp, rel_widths = c(0.47,0.53), align = "h")
+combo <- cowplot::plot_grid(resolvep, dp, rel_widths = c(0.5,0.5), align = "h")
 
 cowplot::plot_grid(casep, combo, nrow=2, rel_heights = c(0.5,0.5),align = "v")
 
