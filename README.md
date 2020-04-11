@@ -1,7 +1,7 @@
 # Visualization plots of Ontario Confirmed COVID-19 Cases
 
 - Visualization 1. Demographic Pyramid Plot of Ontario confirmed, resolved and fatal COVID-19 cases
-- Visualization 2. Heatmap of Ontario, British Columbia and Quebec daily new confirmed cases **(daily updated heatmaps are posted on my [personal site](https://www.kuan-liu.com/post/writing-technical-content/))**
+- Visualization 2. Heatmap of Ontario, British Columbia and Quebec daily new confirmed cases **(daily updated heatmaps are posted on my [personal site](https://www.kuan-liu.com/post/heatmaps_daily_new_cases/))**
 
 ![Pyramid Plot](https://github.com/Kuan-Liu/Visualization-of-Ontario-Covid-19-cases/blob/master/covid19_demo_on_pyramid2.png)
 ![Heatmap](https://github.com/Kuan-Liu/Visualization-of-Ontario-Covid-19-cases/blob/master/covid19_qccase_heatmap.png)
